@@ -110,6 +110,7 @@ class SessionManager {
         directory,
         userId,
         pid: ptyResult.pid,
+        skipPermissions: !!skipPermissions,
         created: new Date().toISOString(),
         isActive: true,
         status: 'active',
@@ -281,8 +282,14 @@ class SessionManager {
     try {
       console.log(`🔗 Connecting user ${userId} to session ${sessionId}`);
 
-      const ptyStatus = await this.pty.sessionExists(sessionId);
+      let ptyStatus = await this.pty.sessionExists(sessionId);
       let session = await this.state.getSession(sessionId);
+
+      // Restart PTY if skip_permissions changed
+      if (ptyStatus.exists && session?.skipPermissions !== !!skipPermissions) {
+        await this.pty.killSession(sessionId);
+        ptyStatus = { exists: false };
+      }
 
       if (!ptyStatus.exists) {
         // Resume from Claude history
@@ -297,6 +304,7 @@ class SessionManager {
           directory: cwd,
           userId,
           pid: ptyResult.pid,
+          skipPermissions: !!skipPermissions,
           created: session?.created || new Date().toISOString(),
           isActive: true,
           status: 'active',

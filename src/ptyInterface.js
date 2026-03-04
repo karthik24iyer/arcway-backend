@@ -73,7 +73,6 @@ class PTYInterface {
         cwd: directory,
         env: {
           ...process.env,
-          PATH: process.env.PATH + ':/Users/karthikeyaniyer/.local/bin:/opt/homebrew/bin:/usr/local/bin',
           TERM: 'xterm-256color',
           COLORTERM: 'truecolor'
         }
@@ -154,7 +153,6 @@ class PTYInterface {
         cwd: directory,
         env: {
           ...process.env,
-          PATH: process.env.PATH + ':/Users/karthikeyaniyer/.local/bin:/opt/homebrew/bin:/usr/local/bin',
           TERM: 'xterm-256color',
           COLORTERM: 'truecolor'
         }
