@@ -10,6 +10,14 @@ class TerminalHandler {
   // that happened with the old hardcoded 80x24. Defaults match main branch's
   // generous starting size so Claude's output isn't word-wrapped too early.
   async attachToSession(sessionId, connectionId, ws, cols = 220, rows = 50) {
+    // Detach any existing PTY for this connection before creating a new one.
+    // Each call to attachToSession would otherwise leak a PTY that keeps streaming
+    // to the same WebSocket, producing duplicated/interleaved output on every reconnect.
+    if (this.activeSessions.get(sessionId)?.has(connectionId)) {
+      this.pty.detachClient(sessionId, connectionId);
+      this.activeSessions.get(sessionId).delete(connectionId);
+    }
+
     // Populate xterm scrollback with tmux history ABOVE the current visible pane.
     // tmux attach-session only redraws the current screen — it never sends past history,
     // which is why the xterm widget's scrollback was nearly empty before this fix.
